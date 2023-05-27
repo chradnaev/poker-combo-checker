@@ -1,76 +1,67 @@
 package org.example;
 
-import com.google.common.base.Preconditions;
-
 import java.util.*;
-import java.util.function.Predicate;
 
 public class ComboCalculator {
 
     public Combo calculateCombo(PokerHand hand) {
         boolean sameSuit = isSameSuit(hand);
         if (isStraight(hand)) {
-            return sameSuit ? new Combo(ComboType.STRAIGHT_FLUSH, null)
-                    : new Combo(ComboType.STRAIGHT, null);
+            return sameSuit ? new Combo(ComboType.STRAIGHT_FLUSH, Optional.empty())
+                    : new Combo(ComboType.STRAIGHT, Optional.empty());
         }
-        List<Card> pairs = getPairs(hand);
-        if (pairs.size() == 2) {
-            return new Combo(ComboType.TWO_PAIRS, getKicker(hand,
-                    c -> c.value != pairs.get(0).value && c.value != pairs.get(1).value));
-        } else if (pairs.size() == 1) {
-            if (getThreeOfAKind(hand).isPresent()) {
-                return new Combo(ComboType.FULL_HOUSE, null);
-            } else {
-                return new Combo(ComboType.PAIR, getKicker(hand, c -> c.value != pairs.get(0).value));
+        if (sameSuit) {
+            return new Combo(ComboType.FLUSH, Optional.empty());
+        }
+        Map<Character, Integer> group = groupByValue(hand);
+        if (group.containsValue(4)) {
+            return new Combo(ComboType.FOUR_OF_A_KIND, getKicker(group));
+        }
+        if (group.containsValue(2)) {
+            if (group.containsValue(3)) {
+                return new Combo(ComboType.FULL_HOUSE, Optional.empty());
             }
-        } else {
-            Preconditions.checkState(pairs.size() == 0);
-            return new Combo(ComboType.HIGH_CARD, hand.getAt(PokerHand.HAND_CARD_COUNT - 1));
+            var countPairs = group.values().stream()
+                    .filter(n -> n == 2)
+                    .count();
+            if (countPairs == 2) {
+                return new Combo(ComboType.TWO_PAIRS, getKicker(group));
+            }
+            return new Combo(ComboType.PAIR, getKicker(group));
         }
+        if (group.containsValue(3)) {
+            return new Combo(ComboType.THREE_OF_A_KIND, getKicker(group));
+        }
+        return new Combo(ComboType.HIGH_CARD, getKicker(group));
     }
 
     private boolean isSameSuit(PokerHand hand) {
+        Card first = hand.getCards().iterator().next();
         return hand.getCards().stream()
                 .skip(1)
-                .filter(c -> c.suite == hand.getAt(0).suite)
-                .count() == hand.getCards().size();
+                .noneMatch(c -> c.suite != first.suite);
     }
 
     private boolean isStraight(PokerHand hand) {
-        for (int index = 1; index < PokerHand.HAND_CARD_COUNT; ++index) {
-            if (hand.getAt(index).value - hand.getAt(index - 1).value != 1) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private List<Card> getPairs(PokerHand hand) {
-        List<Card> pairs = new ArrayList<>(2);
-        for (int index = 1; index < PokerHand.HAND_CARD_COUNT; ++index) {
-            if (hand.getAt(index).value == hand.getAt(index - 1).value) {
-                pairs.add(hand.getAt(index - 1));
-            }
-        }
-        return pairs;
-    }
-
-    private Optional<Card> getThreeOfAKind(PokerHand hand) {
-        int start = 0;
-        for (int index = 1; index < PokerHand.HAND_CARD_COUNT; ++index) {
-            if (hand.getAt(index).value != hand.getAt(index - 1).value) {
-                start = index;
-            } else if (index - start + 1 == 3) {
-                return Optional.of(hand.getAt(index));
-            }
-        }
-        return Optional.empty();
-    }
-
-    private Card getKicker(PokerHand hand, Predicate<Card> predicate) {
+        var it = hand.getCards().iterator();
         return hand.getCards().stream()
-                .filter(predicate)
-                .max(Comparator.naturalOrder())
-                .orElseThrow(() -> new IllegalStateException("All cards are part of combo"));
+                .skip(1)
+                .noneMatch(c -> it.next().valueIndex() != c.valueIndex() - 1);
+    }
+
+    private Map<Character, Integer> groupByValue(PokerHand hand) {
+        HashMap<Character, Integer> valueCounts = new HashMap<>(5);
+        for (Card card : hand.getCards()) {
+            valueCounts.merge(card.value, 1, (integer, integer2) -> integer + 1);
+        }
+        return valueCounts;
+    }
+
+    private Optional<Character> getKicker(Map<Character, Integer> groupedByValue) {
+        Comparator<Map.Entry<Character, Integer>> comparator = Comparator.comparingInt(e -> Card.valueIndexFor(e.getKey()));
+        return groupedByValue.entrySet().stream()
+                .filter(e -> e.getValue() == 1)
+                .max(comparator)
+                .map(Map.Entry::getKey);
     }
 }

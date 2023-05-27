@@ -1,9 +1,6 @@
 package org.example;
 
-import com.google.common.collect.ComparisonChain;
-
 import java.util.Map;
-import java.util.Set;
 
 public class Card implements Comparable<Card> {
     public static final char SUITE_SPADES = 'S';
@@ -23,7 +20,12 @@ public class Card implements Comparable<Card> {
     public static final char QUEEN = 'Q';
     public static final char KING = 'K';
     public static final char ACE = 'A';
-    public static final Set<Character> SUITES = Set.of(SUITE_SPADES, SUITE_HEARTS, SUITE_DIAMONDS, SUITE_CLUBS);
+    public static final Map<Character, Integer> SUITES = Map.ofEntries(
+            Map.entry(SUITE_SPADES, 0),
+            Map.entry(SUITE_HEARTS, 1),
+            Map.entry(SUITE_DIAMONDS, 2),
+            Map.entry(SUITE_CLUBS, 3)
+    );
     public static final Map<Character, Integer> VALUES = Map.ofEntries(
             Map.entry(TWO, 0),
             Map.entry(THREE, 1),
@@ -37,32 +39,48 @@ public class Card implements Comparable<Card> {
             Map.entry(JACK, 9),
             Map.entry(QUEEN, 10),
             Map.entry(KING, 11),
-            Map.entry(ACE, 12));
+            Map.entry(ACE, 12)
+    );
 
     public final char value;
     public final char suite;
+    public final int id;
 
     public Card(char value, char suite) {
         if (!VALUES.containsKey(value)) {
             throw new IllegalArgumentException("Value not found: " + value);
         }
-        if (!SUITES.contains(suite)) {
+        if (!SUITES.containsKey(suite)) {
             throw new IllegalArgumentException("Suite not found: " + suite);
         }
         this.suite = suite;
         this.value = value;
+        id = getIdFor(value, suite);
+    }
+
+    public static int getIdFor(char value, char suite) {
+        return VALUES.get(value) * VALUES.size() + SUITES.get(suite);
+    }
+
+    public static int valueIndexFor(Character value) {
+        return VALUES.get(value);
+    }
+
+    public int getId() {
+        return id;
     }
 
     public int valueIndex() {
-        return VALUES.get(value);
+        return valueIndexFor(value);
+    }
+
+    public int getSuiteIndex() {
+        return SUITES.get(suite);
     }
 
     @Override
     public int compareTo(Card o) {
-        return ComparisonChain.start()
-                .compare(valueIndex(), o.valueIndex())
-                .compare(suite, o.suite)
-                .result();
+        return Integer.compare(id, o.id);
     }
 
     @Override
