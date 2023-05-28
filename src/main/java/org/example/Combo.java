@@ -1,7 +1,5 @@
 package org.example;
 
-import com.google.common.collect.ComparisonChain;
-
 import java.util.Optional;
 
 @SuppressWarnings({ "OptionalUsedAsFieldOrParameterType" })
@@ -20,16 +18,14 @@ public class Combo implements Comparable<Combo> {
 
     @Override
     public int compareTo(Combo o) {
-        return ComparisonChain.start()
-                .compare(score, o.score)
-                .result();
+        return Integer.compare(score, o.score);
     }
 
     @Override
     public String toString() {
         return "Combo{" +
                 "comboType=" + comboType +
-                ", kicker=" +kicker.map(c -> c.toString()).orElse("no") +
+                ", kicker=" +kicker.map(String::valueOf).orElse("no") +
                 ", score=" + score +
                 '}';
     }

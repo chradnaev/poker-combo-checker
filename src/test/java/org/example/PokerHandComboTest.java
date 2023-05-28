@@ -53,6 +53,7 @@ class PokerHandComboTest {
                 FOUR_OF_A_KIND,
                 STRAIGHT_FLUSH
         );
+        System.out.println(hands);
         assertEquals(expected, combos);
     }
 

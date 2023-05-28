@@ -5,18 +5,7 @@ import java.util.*;
 public class ComboCalculator {
 
     public Combo calculateCombo(PokerHand hand) {
-        boolean sameSuit = isSameSuit(hand);
-        if (isStraight(hand)) {
-            return sameSuit ? new Combo(ComboType.STRAIGHT_FLUSH, Optional.empty())
-                    : new Combo(ComboType.STRAIGHT, Optional.empty());
-        }
-        if (sameSuit) {
-            return new Combo(ComboType.FLUSH, Optional.empty());
-        }
         Map<Character, Integer> group = groupByValue(hand);
-        if (group.containsValue(4)) {
-            return new Combo(ComboType.FOUR_OF_A_KIND, getKicker(group));
-        }
         if (group.containsValue(2)) {
             if (group.containsValue(3)) {
                 return new Combo(ComboType.FULL_HOUSE, Optional.empty());
@@ -31,6 +20,17 @@ public class ComboCalculator {
         }
         if (group.containsValue(3)) {
             return new Combo(ComboType.THREE_OF_A_KIND, getKicker(group));
+        }
+        boolean sameSuit = isSameSuit(hand);
+        if (isStraight(hand)) {
+            return sameSuit ? new Combo(ComboType.STRAIGHT_FLUSH, Optional.empty())
+                    : new Combo(ComboType.STRAIGHT, Optional.empty());
+        }
+        if (sameSuit) {
+            return new Combo(ComboType.FLUSH, Optional.empty());
+        }
+        if (group.containsValue(4)) {
+            return new Combo(ComboType.FOUR_OF_A_KIND, getKicker(group));
         }
         return new Combo(ComboType.HIGH_CARD, getKicker(group));
     }
@@ -52,7 +52,7 @@ public class ComboCalculator {
     private Map<Character, Integer> groupByValue(PokerHand hand) {
         HashMap<Character, Integer> valueCounts = new HashMap<>(5);
         for (Card card : hand.getCards()) {
-            valueCounts.merge(card.value, 1, (integer, integer2) -> integer + 1);
+            valueCounts.merge(card.value, 1, Integer::sum);
         }
         return valueCounts;
     }
