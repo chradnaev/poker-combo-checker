@@ -1,35 +1,17 @@
 package org.example;
 
+import com.google.common.collect.ComparisonChain;
+
 import java.util.Optional;
 
-@SuppressWarnings({ "OptionalUsedAsFieldOrParameterType" })
-public class Combo implements Comparable<Combo> {
-    public static final int MAX_VALUE = 20;
-    private final ComboType comboType;
-    private final Optional<CardValue> kicker;
-    public final int score;
-
-    public Combo(ComboType comboType, Optional<CardValue> kicker) {
-        this.comboType = comboType;
-        this.kicker = kicker;
-        this.score = comboType.ordinal() * MAX_VALUE + kicker.map(CardValue::ordinal).orElse(0);
-    }
+public record Combo(ComboType comboType, Optional<CardValue> kicker) implements Comparable<Combo> {
 
     @Override
     public int compareTo(Combo o) {
-        return Integer.compare(score, o.score);
-    }
-
-    public ComboType getComboType() {
-        return comboType;
-    }
-
-    public Optional<CardValue> getKicker() {
-        return kicker;
-    }
-
-    public int getScore() {
-        return score;
+        return ComparisonChain.start()
+                .compare(comboType.ordinal(), o.comboType.ordinal())
+                .compare(kicker.map(CardValue::ordinal).orElse(0), o.kicker.map(CardValue::ordinal).orElse(0))
+                .result();
     }
 
     @Override
@@ -37,7 +19,6 @@ public class Combo implements Comparable<Combo> {
         return "Combo{" +
                 "comboType=" + comboType +
                 ", kicker=" +kicker.map(String::valueOf).orElse("no") +
-                ", score=" + score +
                 '}';
     }
 }

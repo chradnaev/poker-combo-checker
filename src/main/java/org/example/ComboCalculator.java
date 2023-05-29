@@ -5,7 +5,7 @@ import java.util.*;
 public class ComboCalculator {
 
     public Combo calculateCombo(PokerHand hand) {
-        Map<CardValue, Integer> group = groupByValue(hand);
+        var group = groupByValue(hand);
         if (group.containsValue(2)) {
             if (group.containsValue(3)) {
                 return new Combo(ComboType.FULL_HOUSE, Optional.empty());
@@ -36,27 +36,27 @@ public class ComboCalculator {
     }
 
     public Comparator<PokerHand> getPokerHandComparator() {
-        return Comparator.comparingInt(ph -> calculateCombo(ph).score);
+        return (h1, h2) -> calculateCombo(h1).compareTo(calculateCombo(h2));
     }
 
     private boolean isSameSuit(PokerHand hand) {
         Card first = hand.getCards().iterator().next();
         return hand.getCards().stream()
                 .skip(1)
-                .noneMatch(c -> c.suite != first.suite);
+                .noneMatch(c -> c.suite() != first.suite());
     }
 
     private boolean isStraight(PokerHand hand) {
         var it = hand.getCards().iterator();
         return hand.getCards().stream()
                 .skip(1)
-                .noneMatch(c -> it.next().value.ordinal() != c.value.ordinal() - 1);
+                .noneMatch(c -> it.next().value().ordinal() != c.value().ordinal() - 1);
     }
 
     private Map<CardValue, Integer> groupByValue(PokerHand hand) {
-        HashMap<CardValue, Integer> valueCounts = new HashMap<>(5);
+        HashMap<CardValue, Integer> valueCounts = new HashMap<>(hand.getCards().size());
         for (Card card : hand.getCards()) {
-            valueCounts.merge(card.value, 1, Integer::sum);
+            valueCounts.merge(card.value(), 1, Integer::sum);
         }
         return valueCounts;
     }

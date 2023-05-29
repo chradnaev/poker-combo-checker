@@ -1,30 +1,36 @@
 package org.example;
 
-import java.util.Map;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ComparisonChain;
 
-public class Card implements Comparable<Card> {
+import java.util.Objects;
 
-    public final CardValue value;
-    public final CardSuit suite;
-    public final int id;
+public record Card(CardValue value, CardSuit suite) implements Comparable<Card> {
 
-    public Card(CardValue value, CardSuit suite) {
-        this.suite = suite;
-        this.value = value;
-        id = getIdFor(value, suite);
-    }
-
-    public static int getIdFor(CardValue value, CardSuit suit) {
-        return value.ordinal() * CardValue.values().length + suit.ordinal();
-    }
-
-    public int getId() {
-        return id;
+    public Card {
+        Preconditions.checkNotNull(value);
+        Preconditions.checkNotNull(suite);
     }
 
     @Override
     public int compareTo(Card o) {
-        return Integer.compare(id, o.id);
+        return ComparisonChain.start()
+                .compare(value, o.value)
+                .compare(suite, o.suite)
+                .result();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Card card = (Card) o;
+        return value == card.value && suite == card.suite;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(value, suite);
     }
 
     @Override

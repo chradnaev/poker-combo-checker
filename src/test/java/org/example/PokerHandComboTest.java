@@ -15,9 +15,10 @@ class PokerHandComboTest {
 
     @Test
     public void compareHighCards() {
-        PokerHand hand1 = new PokerHand("KS 2H 5C JD TD");
-        PokerHand hand2 = new PokerHand("2C 3C AC 4C 5C");
-        Comparator<PokerHand> comparator = comboCalculator.getPokerHandComparator();
+        var hand1 = new PokerHand("KS 2H 5C JD TD");
+        var hand2 = new PokerHand("2C 3C AC 4C 5C");
+
+        var comparator = comboCalculator.getPokerHandComparator();
 
         assertEquals(-1, comparator.compare(hand1, hand2));
         assertEquals(1, comparator.compare(hand2, hand1));
@@ -39,11 +40,12 @@ class PokerHandComboTest {
                 new PokerHand("4S 4C 4H TD 5S"), // 2 pairs
                 new PokerHand("4S 4C TH TD 5S")  // 3oak
         );
+
         hands.sort(comboCalculator.getPokerHandComparator());
 
-        var combos = hands.stream()
+        var actual = hands.stream()
                 .map(comboCalculator::calculateCombo)
-                .map(Combo::getComboType)
+                .map(Combo::comboType)
                 .toList();
         var expected = Arrays.asList(
                 HIGH_CARD,
@@ -57,7 +59,7 @@ class PokerHandComboTest {
                 FOUR_OF_A_KIND,
                 STRAIGHT_FLUSH
         );
-        assertEquals(expected, combos);
+        assertEquals(expected, actual);
     }
 
     @Test
@@ -65,7 +67,9 @@ class PokerHandComboTest {
         var king = new PokerHand("JS JC KS TD 6H"); // pair + king
         var ten = new PokerHand("JS JC 5S TD 6H"); // pair + ten
 
-        assertEquals(1, comparator.compare(king,ten));
+        var comparison = comparator.compare(king,ten);
+
+        assertEquals(1, comparison);
     }
 
     @Test
@@ -73,96 +77,98 @@ class PokerHandComboTest {
         var threeJack = new PokerHand("JS JC JD TD 6H");
         var threeKing = new PokerHand("KS KC KD TS 6C");
 
-        assertEquals(0, comparator.compare(threeJack, threeKing));
+        var comparison = comparator.compare(threeJack, threeKing);
+
+        assertEquals(0, comparison);
     }
 
     @Test
     public void highCard() {
-        PokerHand hand = new PokerHand("KS 2H 5C JD TD");
+        var hand = new PokerHand("KS 2H 5C JD TD");
 
         var combo = comboCalculator.calculateCombo(hand);
 
-        assertEquals(ComboType.HIGH_CARD, combo.getComboType());
-        assertEquals(KING, combo.getKicker().get());
+        assertEquals(ComboType.HIGH_CARD, combo.comboType());
+        assertEquals(KING, combo.kicker().get());
     }
 
     @Test
     public void pair() {
-        PokerHand hand = new PokerHand("KS KH 5C JD TD");
+        var hand = new PokerHand("KS KH 5C JD TD");
 
         var combo = comboCalculator.calculateCombo(hand);
 
-        assertEquals(ComboType.PAIR, combo.getComboType());
-        assertEquals(JACK, combo.getKicker().get());
+        assertEquals(ComboType.PAIR, combo.comboType());
+        assertEquals(JACK, combo.kicker().get());
     }
 
     @Test
     public void twoPairs() {
-        PokerHand hand = new PokerHand("KS KH 5C JD JC");
+        var hand = new PokerHand("KS KH 5C JD JC");
 
         var combo = comboCalculator.calculateCombo(hand);
 
-        assertEquals(ComboType.TWO_PAIRS, combo.getComboType());
-        assertEquals(FIVE, combo.getKicker().get());
+        assertEquals(ComboType.TWO_PAIRS, combo.comboType());
+        assertEquals(FIVE, combo.kicker().get());
     }
 
     @Test
     public void threeOfAKind() {
-        PokerHand hand = new PokerHand("5S KD 5D JD 5C");
+        var hand = new PokerHand("5S KD 5D JD 5C");
 
         var combo = comboCalculator.calculateCombo(hand);
 
-        assertEquals(ComboType.THREE_OF_A_KIND, combo.getComboType());
-        assertEquals(KING, combo.getKicker().get());
+        assertEquals(ComboType.THREE_OF_A_KIND, combo.comboType());
+        assertEquals(KING, combo.kicker().get());
     }
 
     @Test
     public void straight() {
-        PokerHand hand = new PokerHand("5S 6D 7D 8D 9D");
+        var hand = new PokerHand("5S 6D 7D 8D 9D");
 
         var combo = comboCalculator.calculateCombo(hand);
 
-        assertEquals(ComboType.STRAIGHT, combo.getComboType());
-        assertFalse(combo.getKicker().isPresent());
+        assertEquals(ComboType.STRAIGHT, combo.comboType());
+        assertFalse(combo.kicker().isPresent());
     }
 
     @Test
     public void flush() {
-        PokerHand hand = new PokerHand("5D KD TD JD 9D");
+        var hand = new PokerHand("5D KD TD JD 9D");
 
         var combo = comboCalculator.calculateCombo(hand);
 
-        assertEquals(ComboType.FLUSH, combo.getComboType());
-        assertFalse(combo.getKicker().isPresent());
+        assertEquals(ComboType.FLUSH, combo.comboType());
+        assertFalse(combo.kicker().isPresent());
     }
 
     @Test
     public void fullHouse() {
-        PokerHand hand = new PokerHand("JD JC QD QS QC");
+        var hand = new PokerHand("JD JC QD QS QC");
 
         var combo = comboCalculator.calculateCombo(hand);
 
-        assertEquals(ComboType.FULL_HOUSE, combo.getComboType());
-        assertFalse(combo.getKicker().isPresent());
+        assertEquals(ComboType.FULL_HOUSE, combo.comboType());
+        assertFalse(combo.kicker().isPresent());
     }
 
     @Test
     public void fourOfAKind() {
-        PokerHand hand = new PokerHand("KS KH 5C KC KD");
+        var hand = new PokerHand("KS KH 5C KC KD");
 
         var combo = comboCalculator.calculateCombo(hand);
 
-        assertEquals(ComboType.FOUR_OF_A_KIND, combo.getComboType());
-        assertEquals(FIVE, combo.getKicker().get());
+        assertEquals(ComboType.FOUR_OF_A_KIND, combo.comboType());
+        assertEquals(FIVE, combo.kicker().get());
     }
 
     @Test
     public void straightFlush() {
-        PokerHand hand = new PokerHand("5D 6D 7D 8D 9D");
+        var hand = new PokerHand("5D 6D 7D 8D 9D");
 
         var combo = comboCalculator.calculateCombo(hand);
 
-        assertEquals(ComboType.STRAIGHT_FLUSH, combo.getComboType());
-        assertFalse(combo.getKicker().isPresent());
+        assertEquals(ComboType.STRAIGHT_FLUSH, combo.comboType());
+        assertFalse(combo.kicker().isPresent());
     }
 }

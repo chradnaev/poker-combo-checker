@@ -8,7 +8,7 @@ public class PokerHand {
     private final SortedSet<Card> cards;
 
     public PokerHand(String raw) {
-        String[] parts = raw.split(" ");
+        var parts = raw.split(" ");
         if (parts.length != HAND_CARD_COUNT) {
             throw new IllegalArgumentException("Cards in hand should be five");
         }
