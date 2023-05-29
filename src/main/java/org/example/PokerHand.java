@@ -12,19 +12,27 @@ public class PokerHand {
         if (parts.length != HAND_CARD_COUNT) {
             throw new IllegalArgumentException("Cards in hand should be five");
         }
-        cards = new TreeSet<>();
-        for (String cardRaw : parts) {
-            if (cardRaw.length() != 2) {
-                throw new IllegalArgumentException("Invalid card format");
-            }
-            CardValue value = CardValue.byShortName(cardRaw.charAt(0))
-                    .orElseThrow(() -> new IllegalArgumentException("Unknown card value"));
-            CardSuit suite = CardSuit.byShortName(cardRaw.charAt(1))
-                    .orElseThrow(() -> new IllegalArgumentException("Unknown card suit"));
-            if (!cards.add(new Card(value, suite))) {
-                throw new IllegalArgumentException("Duplicate card in with same ID");
-            }
+        cards = Arrays.stream(parts)
+                .map(this::parseCard)
+                .collect(TreeSet::new,
+                        (cards1, card) -> {
+                            if (cards1.add(card)) {
+                                throw new IllegalArgumentException("Duplicate card with same suite and value");
+                            }
+                        },
+                        (cards1, cards2) -> {
+                        });
+    }
+
+    private Card parseCard(String cardRaw) {
+        if (cardRaw.length() != 2) {
+            throw new IllegalArgumentException("Invalid card format");
         }
+        CardValue value = CardValue.byShortName(cardRaw.charAt(0))
+                .orElseThrow(() -> new IllegalArgumentException("Unknown card value"));
+        CardSuit suite = CardSuit.byShortName(cardRaw.charAt(1))
+                .orElseThrow(() -> new IllegalArgumentException("Unknown card suit"));
+        return new Card(value, suite);
     }
 
     public Set<Card> getCards() {
