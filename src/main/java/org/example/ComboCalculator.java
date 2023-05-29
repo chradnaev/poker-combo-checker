@@ -5,7 +5,7 @@ import java.util.*;
 public class ComboCalculator {
 
     public Combo calculateCombo(PokerHand hand) {
-        Map<Character, Integer> group = groupByValue(hand);
+        Map<CardValue, Integer> group = groupByValue(hand);
         if (group.containsValue(2)) {
             if (group.containsValue(3)) {
                 return new Combo(ComboType.FULL_HOUSE, Optional.empty());
@@ -35,6 +35,10 @@ public class ComboCalculator {
         return new Combo(ComboType.HIGH_CARD, getKicker(group));
     }
 
+    public Comparator<PokerHand> getPokerHandComparator() {
+        return Comparator.comparingInt(ph -> calculateCombo(ph).score);
+    }
+
     private boolean isSameSuit(PokerHand hand) {
         Card first = hand.getCards().iterator().next();
         return hand.getCards().stream()
@@ -46,19 +50,19 @@ public class ComboCalculator {
         var it = hand.getCards().iterator();
         return hand.getCards().stream()
                 .skip(1)
-                .noneMatch(c -> it.next().valueIndex() != c.valueIndex() - 1);
+                .noneMatch(c -> it.next().value.ordinal() != c.value.ordinal() - 1);
     }
 
-    private Map<Character, Integer> groupByValue(PokerHand hand) {
-        HashMap<Character, Integer> valueCounts = new HashMap<>(5);
+    private Map<CardValue, Integer> groupByValue(PokerHand hand) {
+        HashMap<CardValue, Integer> valueCounts = new HashMap<>(5);
         for (Card card : hand.getCards()) {
             valueCounts.merge(card.value, 1, Integer::sum);
         }
         return valueCounts;
     }
 
-    private Optional<Character> getKicker(Map<Character, Integer> groupedByValue) {
-        Comparator<Map.Entry<Character, Integer>> comparator = Comparator.comparingInt(e -> Card.valueIndexFor(e.getKey()));
+    private Optional<CardValue> getKicker(Map<CardValue, Integer> groupedByValue) {
+        Comparator<Map.Entry<CardValue, Integer>> comparator = Comparator.comparingInt(e -> e.getKey().ordinal());
         return groupedByValue.entrySet().stream()
                 .filter(e -> e.getValue() == 1)
                 .max(comparator)

@@ -5,20 +5,31 @@ import java.util.Optional;
 @SuppressWarnings({ "OptionalUsedAsFieldOrParameterType" })
 public class Combo implements Comparable<Combo> {
     public static final int MAX_VALUE = 20;
-    public final ComboType comboType;
-    public final Optional<Character> kicker;
+    private final ComboType comboType;
+    private final Optional<CardValue> kicker;
     public final int score;
 
-    public Combo(ComboType comboType, Optional<Character> kicker) {
+    public Combo(ComboType comboType, Optional<CardValue> kicker) {
         this.comboType = comboType;
         this.kicker = kicker;
-        this.score = comboType.ordinal() * MAX_VALUE + kicker.map(Card::valueIndexFor).orElse(0);
+        this.score = comboType.ordinal() * MAX_VALUE + kicker.map(CardValue::ordinal).orElse(0);
     }
-
 
     @Override
     public int compareTo(Combo o) {
         return Integer.compare(score, o.score);
+    }
+
+    public ComboType getComboType() {
+        return comboType;
+    }
+
+    public Optional<CardValue> getKicker() {
+        return kicker;
+    }
+
+    public int getScore() {
+        return score;
     }
 
     @Override
