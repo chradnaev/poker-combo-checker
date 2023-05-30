@@ -16,7 +16,7 @@ public class PokerHand {
                 .map(this::parseCard)
                 .collect(TreeSet::new,
                         (cards1, card) -> {
-                            if (cards1.add(card)) {
+                            if (!cards1.add(card)) {
                                 throw new IllegalArgumentException("Duplicate card with same suite and value");
                             }
                         },
