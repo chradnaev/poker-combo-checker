@@ -17,8 +17,8 @@ public class PokerHandComboTest {
         var hand1 = new PokerHand("KS 2H 5C JD TD", comboCalculator);
         var hand2 = new PokerHand("2C 3C AC 4C 5C", comboCalculator);
 
-        assertTrue(hand1.compareTo(hand2) < 0);
-        assertTrue(hand2.compareTo(hand1) > 0);
+        assertTrue(hand1.compareTo(hand2) > 0);
+        assertTrue(hand2.compareTo(hand1) < 0);
         assertEquals(0, hand1.compareTo(hand1));
         assertEquals(0, hand2.compareTo(hand2));
     }
@@ -45,16 +45,16 @@ public class PokerHandComboTest {
                 .map(Combo::comboType)
                 .toList();
         var expected = Arrays.asList(
-                HIGH_CARD,
-                PAIR,
-                TWO_PAIRS,
-                THREE_OF_A_KIND,
-                STRAIGHT,
-                FLUSH,
+                STRAIGHT_FLUSH,
+                FOUR_OF_A_KIND,
+                FOUR_OF_A_KIND,
                 FULL_HOUSE,
-                FOUR_OF_A_KIND,
-                FOUR_OF_A_KIND,
-                STRAIGHT_FLUSH
+                FLUSH,
+                STRAIGHT,
+                THREE_OF_A_KIND,
+                TWO_PAIRS,
+                PAIR,
+                HIGH_CARD
         );
         assertEquals(expected, actual);
     }
@@ -64,7 +64,7 @@ public class PokerHandComboTest {
         var six = new PokerHand("JS JC KS TD 6H", comboCalculator); // pair + king + ten + 6
         var three = new PokerHand("JS JC KD TD 3H", comboCalculator); // pair + king + ten + 3
 
-        var comparison = six.compareTo(three);
+        var comparison = three.compareTo(six);
 
         assertTrue(comparison > 0);
     }
@@ -74,7 +74,7 @@ public class PokerHandComboTest {
         var threeJack = new PokerHand("JS JC JD QD 6H", comboCalculator); // three of Jack + Queen
         var threeKing = new PokerHand("KS KC KD TS 6C", comboCalculator); // three of King + Ten
 
-        var comparison = threeKing.compareTo(threeJack);
+        var comparison = threeJack.compareTo(threeKing);
 
         assertTrue(comparison > 0);
     }

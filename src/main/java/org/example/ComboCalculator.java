@@ -8,20 +8,8 @@ public class ComboCalculator {
 
     public Combo calculateCombo(PokerHand hand) {
         var group = groupByValue(hand);
-        if (group.containsValue(2)) {
-            if (group.containsValue(3)) {
-                return new Combo(ComboType.FULL_HOUSE, getTopOfCount(group, i -> i == 2 || i == 3), Collections.emptyList());
-            }
-            var countPairs = group.values().stream()
-                    .filter(n -> n == 2)
-                    .count();
-            if (countPairs == 2) {
-                return new Combo(ComboType.TWO_PAIRS, getTopOfCount(group, i -> i == 2), getKicker(group));
-            }
-            return new Combo(ComboType.PAIR, getTopOfCount(group, i -> i == 2), getKicker(group));
-        }
-        if (group.containsValue(3)) {
-            return new Combo(ComboType.THREE_OF_A_KIND, getTopOfCount(group, i -> i == 3), getKicker(group));
+        if (group.size() != 5) {
+            return groupBasedCombos(group);
         }
         boolean sameSuit = isSameSuit(hand);
         if (isStraight(hand)) {
@@ -31,10 +19,29 @@ public class ComboCalculator {
         if (sameSuit) {
             return new Combo(ComboType.FLUSH, getTopCard(hand), Collections.emptyList());
         }
-        if (group.containsValue(4)) {
-            return new Combo(ComboType.FOUR_OF_A_KIND, getTopOfCount(group, i -> i == 4), getKicker(group));
+        return new Combo(ComboType.HIGH_CARD, getTopCard(hand), getKickers(group));
+    }
+
+    private Combo groupBasedCombos(Map<CardValue, Integer> group) {
+        if (group.containsValue(2)) {
+            if (group.containsValue(3)) {
+                return new Combo(ComboType.FULL_HOUSE, getTopOfCount(group, i -> i == 2 || i == 3), Collections.emptyList());
+            }
+            var countPairs = group.values().stream()
+                    .filter(n -> n == 2)
+                    .count();
+            if (countPairs == 2) {
+                return new Combo(ComboType.TWO_PAIRS, getTopOfCount(group, i -> i == 2), getKickers(group));
+            }
+            return new Combo(ComboType.PAIR, getTopOfCount(group, i -> i == 2), getKickers(group));
         }
-        return new Combo(ComboType.HIGH_CARD, getTopCard(hand), getKicker(group));
+        if (group.containsValue(3)) {
+            return new Combo(ComboType.THREE_OF_A_KIND, getTopOfCount(group, i -> i == 3), getKickers(group));
+        }
+        if (group.containsValue(4)) {
+            return new Combo(ComboType.FOUR_OF_A_KIND, getTopOfCount(group, i -> i == 4), getKickers(group));
+        }
+        throw new IllegalStateException("Not found group base combos");
     }
 
     private boolean isSameSuit(PokerHand hand) {
@@ -59,7 +66,7 @@ public class ComboCalculator {
         return valueCounts;
     }
 
-    private List<CardValue> getKicker(Map<CardValue, Integer> groupedByValue) {
+    private List<CardValue> getKickers(Map<CardValue, Integer> groupedByValue) {
         Comparator<Map.Entry<CardValue, Integer>> comparator = Comparator.comparingInt(e -> e.getKey().ordinal());
         return groupedByValue.entrySet().stream()
                 .filter(e -> e.getValue() == 1)

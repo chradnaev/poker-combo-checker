@@ -20,7 +20,7 @@ public record Combo(ComboType comboType, CardValue comboHighCard, List<CardValue
                     .findFirst()
                     .orElse(0);
         }
-        return comp;
+        return -comp;
     }
 
 }
