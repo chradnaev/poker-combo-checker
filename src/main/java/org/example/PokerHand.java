@@ -32,6 +32,10 @@ public class PokerHand implements Comparable<PokerHand> {
         return new Card(value, suite);
     }
 
+    public Combo getCombo() {
+        return combo;
+    }
+
     public Set<Card> getCards() {
         return cards;
     }

@@ -17,15 +17,15 @@ public class PokerHandComboTest {
         var hand1 = new PokerHand("KS 2H 5C JD TD", comboCalculator);
         var hand2 = new PokerHand("2C 3C AC 4C 5C", comboCalculator);
 
-        assertEquals(-1, hand1.compareTo(hand2));
-        assertEquals(1, hand2.compareTo(hand1));
+        assertTrue(hand1.compareTo(hand2) < 0);
+        assertTrue(hand2.compareTo(hand1) > 0);
         assertEquals(0, hand1.compareTo(hand1));
         assertEquals(0, hand2.compareTo(hand2));
     }
 
     @Test
     void sortingHands() {
-        var hands =Arrays.asList(
+        var hands = Arrays.asList(
                 new PokerHand("KS 2H 5C JD TD", comboCalculator), // high card
                 new PokerHand("KS KH KC JD JC", comboCalculator), // full house
                 new PokerHand("JS JC KS TD 6H", comboCalculator), // pair
@@ -34,14 +34,14 @@ public class PokerHandComboTest {
                 new PokerHand("4S 5S 6S 7S 8S", comboCalculator), // straight flush
                 new PokerHand("TC JH QS KS AH", comboCalculator), // straight
                 new PokerHand("3C AC KC 5C 8C", comboCalculator), // flush
-                new PokerHand("4S 4C 4H TD 5S", comboCalculator), // 2 pairs
-                new PokerHand("4S 4C TH TD 5S", comboCalculator)  // 3oak
+                new PokerHand("4S 4C 4H TD 5S", comboCalculator), // 3oak
+                new PokerHand("4S 4C TH TD 5S", comboCalculator)  // 2 pairs
         );
 
         Collections.sort(hands);
 
         var actual = hands.stream()
-                .map(comboCalculator::calculateCombo)
+                .map(PokerHand::getCombo)
                 .map(Combo::comboType)
                 .toList();
         var expected = Arrays.asList(
@@ -61,22 +61,22 @@ public class PokerHandComboTest {
 
     @Test
     void sortingWithKicker() {
-        var king = new PokerHand("JS JC KS TD 6H", comboCalculator); // pair + king
-        var ten = new PokerHand("JS JC 5S TD 6H", comboCalculator); // pair + ten
+        var six = new PokerHand("JS JC KS TD 6H", comboCalculator); // pair + king + ten + 6
+        var three = new PokerHand("JS JC KD TD 3H", comboCalculator); // pair + king + ten + 3
 
-        var comparison = king.compareTo(ten);
+        var comparison = six.compareTo(three);
 
-        assertEquals(1, comparison);
+        assertTrue(comparison > 0);
     }
 
     @Test
-    void sortingSameCombo() {
-        var threeJack = new PokerHand("JS JC JD TD 6H", comboCalculator);
-        var threeKing = new PokerHand("KS KC KD TS 6C", comboCalculator);
+    void sortingSameComboWithDifferentCards() {
+        var threeJack = new PokerHand("JS JC JD QD 6H", comboCalculator); // three of Jack + Queen
+        var threeKing = new PokerHand("KS KC KD TS 6C", comboCalculator); // three of King + Ten
 
-        var comparison = threeJack.compareTo(threeKing);
+        var comparison = threeKing.compareTo(threeJack);
 
-        assertEquals(0, comparison);
+        assertTrue(comparison > 0);
     }
 
     @Test
@@ -86,7 +86,7 @@ public class PokerHandComboTest {
         var combo = comboCalculator.calculateCombo(hand);
 
         assertEquals(ComboType.HIGH_CARD, combo.comboType());
-        assertEquals(KING, combo.kicker().get());
+        assertEquals(Arrays.asList(KING, JACK, TEN, FIVE, TWO), combo.kicker());
     }
 
     @Test
@@ -96,7 +96,7 @@ public class PokerHandComboTest {
         var combo = comboCalculator.calculateCombo(hand);
 
         assertEquals(ComboType.PAIR, combo.comboType());
-        assertEquals(JACK, combo.kicker().get());
+        assertEquals(Arrays.asList(JACK, TEN, FIVE), combo.kicker());
     }
 
     @Test
@@ -106,7 +106,7 @@ public class PokerHandComboTest {
         var combo = comboCalculator.calculateCombo(hand);
 
         assertEquals(ComboType.TWO_PAIRS, combo.comboType());
-        assertEquals(FIVE, combo.kicker().get());
+        assertEquals(Arrays.asList(FIVE), combo.kicker());
     }
 
     @Test
@@ -116,7 +116,7 @@ public class PokerHandComboTest {
         var combo = comboCalculator.calculateCombo(hand);
 
         assertEquals(ComboType.THREE_OF_A_KIND, combo.comboType());
-        assertEquals(KING, combo.kicker().get());
+        assertEquals(Arrays.asList(KING, JACK), combo.kicker());
     }
 
     @Test
@@ -126,7 +126,7 @@ public class PokerHandComboTest {
         var combo = comboCalculator.calculateCombo(hand);
 
         assertEquals(ComboType.STRAIGHT, combo.comboType());
-        assertFalse(combo.kicker().isPresent());
+        assertTrue(combo.kicker().isEmpty());
     }
 
     @Test
@@ -136,7 +136,7 @@ public class PokerHandComboTest {
         var combo = comboCalculator.calculateCombo(hand);
 
         assertEquals(ComboType.FLUSH, combo.comboType());
-        assertFalse(combo.kicker().isPresent());
+        assertTrue(combo.kicker().isEmpty());
     }
 
     @Test
@@ -146,7 +146,7 @@ public class PokerHandComboTest {
         var combo = comboCalculator.calculateCombo(hand);
 
         assertEquals(ComboType.FULL_HOUSE, combo.comboType());
-        assertFalse(combo.kicker().isPresent());
+        assertTrue(combo.kicker().isEmpty());
     }
 
     @Test
@@ -156,7 +156,7 @@ public class PokerHandComboTest {
         var combo = comboCalculator.calculateCombo(hand);
 
         assertEquals(ComboType.FOUR_OF_A_KIND, combo.comboType());
-        assertEquals(FIVE, combo.kicker().get());
+        assertEquals(Arrays.asList(FIVE), combo.kicker());
     }
 
     @Test
@@ -166,6 +166,6 @@ public class PokerHandComboTest {
         var combo = comboCalculator.calculateCombo(hand);
 
         assertEquals(ComboType.STRAIGHT_FLUSH, combo.comboType());
-        assertFalse(combo.kicker().isPresent());
+        assertTrue(combo.kicker().isEmpty());
     }
 }
