@@ -2,36 +2,33 @@ package org.example;
 
 
 import java.util.*;
+import java.util.stream.Collectors;
 
-public class PokerHand {
+public class PokerHand implements Comparable<PokerHand> {
     public static final int HAND_CARD_COUNT = 5;
     private final SortedSet<Card> cards;
+    private final Combo combo;
 
-    public PokerHand(String raw) {
+    public PokerHand(String raw, ComboCalculator calculator) {
         var parts = raw.split(" ");
         if (parts.length != HAND_CARD_COUNT) {
-            throw new IllegalArgumentException("Cards in hand should be five");
+            throw new CardValidationException("Cards in hand should be five: " + raw);
         }
         cards = Arrays.stream(parts)
                 .map(this::parseCard)
-                .collect(TreeSet::new,
-                        (cards1, card) -> {
-                            if (!cards1.add(card)) {
-                                throw new IllegalArgumentException("Duplicate card with same suite and value");
-                            }
-                        },
-                        (cards1, cards2) -> {
-                        });
+                .collect(Collectors.toCollection(TreeSet::new));
+        if (cards.size() != HAND_CARD_COUNT) {
+            throw new CardValidationException("Duplicate card with same value and suite: " + raw);
+        }
+        this.combo = calculator.calculateCombo(this);
     }
 
     private Card parseCard(String cardRaw) {
         if (cardRaw.length() != 2) {
-            throw new IllegalArgumentException("Invalid card format");
+            throw new CardValidationException("Invalid card format: " + cardRaw);
         }
-        CardValue value = CardValue.byShortName(cardRaw.charAt(0))
-                .orElseThrow(() -> new IllegalArgumentException("Unknown card value"));
-        CardSuit suite = CardSuit.byShortName(cardRaw.charAt(1))
-                .orElseThrow(() -> new IllegalArgumentException("Unknown card suit"));
+        CardValue value = CardValue.byShortName(cardRaw.charAt(0));
+        CardSuit suite = CardSuit.byShortName(cardRaw.charAt(1));
         return new Card(value, suite);
     }
 
@@ -44,5 +41,10 @@ public class PokerHand {
         return "PokerHand{" +
                 "cards=" + cards +
                 '}';
+    }
+
+    @Override
+    public int compareTo(PokerHand o) {
+        return combo.compareTo(o.combo);
     }
 }

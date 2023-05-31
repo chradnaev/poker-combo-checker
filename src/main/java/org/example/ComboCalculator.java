@@ -35,10 +35,6 @@ public class ComboCalculator {
         return new Combo(ComboType.HIGH_CARD, getKicker(group));
     }
 
-    public Comparator<PokerHand> getPokerHandComparator() {
-        return (h1, h2) -> calculateCombo(h1).compareTo(calculateCombo(h2));
-    }
-
     private boolean isSameSuit(PokerHand hand) {
         Card first = hand.getCards().iterator().next();
         return hand.getCards().stream()

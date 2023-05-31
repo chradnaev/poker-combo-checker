@@ -1,7 +1,6 @@
 package org.example;
 
 import java.util.Arrays;
-import java.util.Optional;
 
 public enum CardValue {
     TWO('2'),
@@ -24,9 +23,10 @@ public enum CardValue {
         this.shortName = shortName;
     }
 
-    public static Optional<CardValue> byShortName(char shortName) {
+    public static CardValue byShortName(char shortName) {
         return Arrays.stream(values())
                 .filter(s -> s.shortName == shortName)
-                .findFirst();
+                .findFirst()
+                .orElseThrow(() -> new CardValidationException("Unknown card value: "+shortName));
     }
 }

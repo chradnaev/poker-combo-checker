@@ -1,7 +1,6 @@
 package org.example;
 
 import java.util.Arrays;
-import java.util.Optional;
 
 public enum CardSuit {
     SUITE_SPADES('S'),
@@ -15,9 +14,10 @@ public enum CardSuit {
         this.shortName = shortName;
     }
 
-    public static Optional<CardSuit> byShortName(char shortName) {
+    public static CardSuit byShortName(char shortName) {
         return Arrays.stream(values())
                 .filter(s -> s.shortName == shortName)
-                .findFirst();
+                .findFirst()
+                .orElseThrow(() -> new CardValidationException("Unknown card suite: "+shortName));
     }
 }
