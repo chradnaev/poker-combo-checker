@@ -44,6 +44,7 @@ public class PokerHand implements Comparable<PokerHand> {
     public String toString() {
         return "PokerHand{" +
                 "cards=" + cards +
+                ", combo=" + combo +
                 '}';
     }
 

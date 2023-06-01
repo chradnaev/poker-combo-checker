@@ -3,6 +3,7 @@ package org.example;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import static java.util.Collections.singletonList;
 
 public class ComboCalculator {
 
@@ -13,33 +14,33 @@ public class ComboCalculator {
         }
         boolean sameSuit = isSameSuit(hand);
         if (isStraight(hand)) {
-            return sameSuit ? new Combo(ComboType.STRAIGHT_FLUSH, getTopCard(hand), Collections.emptyList())
-                    : new Combo(ComboType.STRAIGHT, getTopCard(hand), Collections.emptyList());
+            return sameSuit ? new Combo(ComboType.STRAIGHT_FLUSH, singletonList(getTopCard(hand)), Collections.emptyList())
+                    : new Combo(ComboType.STRAIGHT, singletonList(getTopCard(hand)), Collections.emptyList());
         }
         if (sameSuit) {
-            return new Combo(ComboType.FLUSH, getTopCard(hand), Collections.emptyList());
+            return new Combo(ComboType.FLUSH, singletonList(getTopCard(hand)), Collections.emptyList());
         }
-        return new Combo(ComboType.HIGH_CARD, getTopCard(hand), getKickers(group));
+        return new Combo(ComboType.HIGH_CARD, singletonList(getTopCard(hand)), getKickers(group));
     }
 
     private Combo groupBasedCombos(Map<CardValue, Integer> group) {
         if (group.containsValue(2)) {
             if (group.containsValue(3)) {
-                return new Combo(ComboType.FULL_HOUSE, getTopOfCount(group, i -> i == 2 || i == 3), Collections.emptyList());
+                return new Combo(ComboType.FULL_HOUSE, getCardsByCount(group, i -> i == 2 || i == 3), Collections.emptyList());
             }
             var countPairs = group.values().stream()
                     .filter(n -> n == 2)
                     .count();
             if (countPairs == 2) {
-                return new Combo(ComboType.TWO_PAIRS, getTopOfCount(group, i -> i == 2), getKickers(group));
+                return new Combo(ComboType.TWO_PAIRS, getCardsByCount(group, i -> i == 2), getKickers(group));
             }
-            return new Combo(ComboType.PAIR, getTopOfCount(group, i -> i == 2), getKickers(group));
+            return new Combo(ComboType.PAIR, getCardsByCount(group, i -> i == 2), getKickers(group));
         }
         if (group.containsValue(3)) {
-            return new Combo(ComboType.THREE_OF_A_KIND, getTopOfCount(group, i -> i == 3), getKickers(group));
+            return new Combo(ComboType.THREE_OF_A_KIND, getCardsByCount(group, i -> i == 3), getKickers(group));
         }
         if (group.containsValue(4)) {
-            return new Combo(ComboType.FOUR_OF_A_KIND, getTopOfCount(group, i -> i == 4), getKickers(group));
+            return new Combo(ComboType.FOUR_OF_A_KIND, getCardsByCount(group, i -> i == 4), getKickers(group));
         }
         throw new IllegalStateException("Not found group base combos");
     }
@@ -82,12 +83,12 @@ public class ComboCalculator {
                 .orElseThrow(() -> new IllegalStateException("Empty card hand"));
     }
 
-    private CardValue getTopOfCount(Map<CardValue, Integer> groupedByValue, Predicate<Integer> countPredicate) {
+    private List<CardValue> getCardsByCount(Map<CardValue, Integer> groupedByValue, Predicate<Integer> countPredicate) {
         Comparator<Map.Entry<CardValue, Integer>> comparator = Comparator.comparingInt(e -> e.getKey().ordinal());
         return groupedByValue.entrySet().stream()
                 .filter(e -> countPredicate.test(e.getValue()))
-                .min(comparator)
+                .sorted(comparator.reversed())
                 .map(Map.Entry::getKey)
-                .orElseThrow(() -> new IllegalStateException("Empty kicker list in hand"));
+                .toList();
     }
 }
