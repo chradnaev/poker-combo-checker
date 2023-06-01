@@ -56,7 +56,7 @@ public class ComboCalculator {
         var it = hand.getCards().iterator();
         return hand.getCards().stream()
                 .skip(1)
-                .noneMatch(c -> it.next().value().ordinal() != c.value().ordinal() + 1);
+                .noneMatch(c -> it.next().value().ordinal() != c.value().ordinal() - 1);
     }
 
     private Map<CardValue, Integer> groupByValue(PokerHand hand) {
@@ -71,7 +71,7 @@ public class ComboCalculator {
         Comparator<Map.Entry<CardValue, Integer>> comparator = Comparator.comparingInt(e -> e.getKey().ordinal());
         return groupedByValue.entrySet().stream()
                 .filter(e -> e.getValue() == 1)
-                .sorted(comparator.reversed())
+                .sorted(comparator)
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toList());
     }
@@ -87,7 +87,7 @@ public class ComboCalculator {
         Comparator<Map.Entry<CardValue, Integer>> comparator = Comparator.comparingInt(e -> e.getKey().ordinal());
         return groupedByValue.entrySet().stream()
                 .filter(e -> countPredicate.test(e.getValue()))
-                .sorted(comparator.reversed())
+                .sorted(comparator)
                 .map(Map.Entry::getKey)
                 .toList();
     }

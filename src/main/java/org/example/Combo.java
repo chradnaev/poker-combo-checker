@@ -14,7 +14,7 @@ public record Combo(ComboType comboType, List<CardValue> comboCards, List<CardVa
         if (comp == 0) {
             comp = compareCards(kickers, o.kickers);
         }
-        return -comp;
+        return comp;
     }
 
     private int compareCards(List<CardValue> cardsLeft, List<CardValue> cardsRight) {

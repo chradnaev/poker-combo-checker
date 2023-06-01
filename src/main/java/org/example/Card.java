@@ -12,7 +12,7 @@ public record Card(CardValue value, CardSuit suite) implements Comparable<Card> 
 
     @Override
     public int compareTo(Card o) {
-        return -ComparisonChain.start()
+        return ComparisonChain.start()
                 .compare(value, o.value)
                 .compare(suite, o.suite)
                 .result();
